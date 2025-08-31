@@ -15,7 +15,10 @@ export default function Home() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const file = fileRef.current?.files?.[0];
-    if (!file) { alert("Izaberi audio fajl ili snimi."); return; }
+    if (!file) {
+      alert("Izaberi audio fajl ili snimi.");
+      return;
+    }
 
     setBusy(true);
     setAudioUrl(null);
@@ -27,43 +30,17 @@ export default function Home() {
       fd.append("speed", String(speed));
       fd.append("remove_hiss", String(removeHiss));
 
-      const start = await fetch("/api/jobs/start", { method: "POST", body: fd });
-      if (!start.ok) {
-        let msg = `Start error (HTTP ${start.status})`;
-        try {
-          const ct = start.headers.get("content-type") || "";
-          if (ct.includes("application/json")) {
-            const j = await start.json();
-            msg = j?.error || msg;
-          } else {
-            const t = await start.text();
-            msg = t || msg;
-          }
-        } catch {}
-        throw new Error(msg);
+      const res = await fetch("/api/convert", { method: "POST", body: fd });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j?.error || `HTTP ${res.status}`);
       }
-      const { jobId } = await start.json();
 
-      let tries = 0;
-      const MAX_TRIES = 120;
-      const INTERVAL_MS = 2000;
-
-      while (tries < MAX_TRIES) {
-        const res = await fetch(`/api/jobs/status?id=${encodeURIComponent(jobId)}`);
-        const ct = res.headers.get("content-type") || "";
-
-        if (ct.startsWith("audio/")) {
-          const blob = await res.blob();
-          setAudioUrl(URL.createObjectURL(blob));
-          setBusy(false);
-          return;
-        }
-        await new Promise((r) => setTimeout(r, INTERVAL_MS));
-        tries++;
-      }
-      throw new Error("Isteklo čekanje. Pokušaj kraći snimak ili probaj ponovo.");
+      const blob = await res.blob();
+      setAudioUrl(URL.createObjectURL(blob));
     } catch (err: any) {
       alert("Greška: " + (err?.message || "nepoznata"));
+    } finally {
       setBusy(false);
     }
   }
@@ -72,26 +49,55 @@ export default function Home() {
     <main className="container">
       <h1 style={{ fontSize: 28, marginBottom: 8 }}>🦜 Papagaj glas — profesionalni demo</h1>
       <p style={{ opacity: 0.8, marginBottom: 24 }}>
-        Upload ili snimi glas → sajt poziva tvoj privatni Hugging Face Space → dobijaš papagaj verziju.
+        Upload ili snimi glas → server poziva tvoj Hugging Face Space → dobijaš papagaj verziju (WAV).
       </p>
 
       <form onSubmit={handleSubmit} className="card">
         <div className="row">
-          <input ref={fileRef} type="file" accept="audio/*" disabled={busy} />
-          <label>Pitch (semitoni): {pitch}
-            <input className="range" type="range" min={-4} max={12} step={1}
-                   value={pitch} onChange={(e) => setPitch(Number(e.target.value))} disabled={busy} />
-          </label>
-          <label>Brzina: {speed.toFixed(2)}
-            <input className="range" type="range" min={0.9} max={1.2} step={0.01}
-                   value={speed} onChange={(e) => setSpeed(Number(e.target.value))} disabled={busy} />
-          </label>
           <label>
-            <input type="checkbox" checked={removeHiss}
-                   onChange={(e) => setRemoveHiss(e.target.checked)} disabled={busy} />
-            {" "}Ukloni pištanje (notch)
+            Izaberi audio fajl:
+            <input ref={fileRef} type="file" accept="audio/*" disabled={busy} />
           </label>
-          <button type="submit" disabled={busy}>{busy ? "Obrada..." : "Pretvori"}</button>
+
+          <label>Pitch (semitoni): {pitch}
+            <input
+              className="range"
+              type="range"
+              min={-4}
+              max={12}
+              step={1}
+              value={pitch}
+              onChange={(e) => setPitch(Number(e.target.value))}
+              disabled={busy}
+            />
+          </label>
+
+          <label>Brzina: {speed.toFixed(2)}
+            <input
+              className="range"
+              type="range"
+              min={0.9}
+              max={1.2}
+              step={0.01}
+              value={speed}
+              onChange={(e) => setSpeed(Number(e.target.value))}
+              disabled={busy}
+            />
+          </label>
+
+          <label>
+            <input
+              type="checkbox"
+              checked={removeHiss}
+              onChange={(e) => setRemoveHiss(e.target.checked)}
+              disabled={busy}
+            />{" "}
+            Ukloni pištanje (notch)
+          </label>
+
+          <button type="submit" disabled={busy}>
+            {busy ? "Obrada..." : "Pretvori"}
+          </button>
         </div>
       </form>
 
