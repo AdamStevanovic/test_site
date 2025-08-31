@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { client } from "@gradio/client";
 
 const HF_SPACE = process.env.HF_SPACE;
-const HF_TOKEN = process.env.HF_TOKEN;
+const HF_TOKEN = process.env.HF_TOKEN; // opcionalno
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,8 +10,9 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    if (!HF_SPACE) return NextResponse.json({ error: "HF_SPACE is missing" }, { status: 500 });
-    if (!HF_TOKEN) return NextResponse.json({ error: "HF_TOKEN is missing" }, { status: 500 });
+    if (!HF_SPACE) {
+      return NextResponse.json({ error: "HF_SPACE is missing" }, { status: 500 });
+    }
 
     const form = await req.formData();
     const audio = form.get("audio");
@@ -23,8 +24,10 @@ export async function POST(req: NextRequest) {
     const speed = Number(form.get("speed") ?? 1.05);
     const remove_hiss = String(form.get("remove_hiss") ?? "true") === "true";
 
-    const app = await client(HF_SPACE, { hf_token: HF_TOKEN });
+    // token koristimo samo ako postoji (za public Space nije neophodan)
+    const app = await client(HF_SPACE, HF_TOKEN ? { hf_token: HF_TOKEN } : undefined);
 
+    // pronađi endpoint
     let endpoint = "/predict";
     try {
       // @ts-ignore
