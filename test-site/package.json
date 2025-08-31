@@ -25,5 +25,5 @@
   }
 }
 "dependencies": {
-  "@gradio/client": "^1.4.0"   // ili najnovije
+  "@gradio/client": "^1.4.0"
 }
