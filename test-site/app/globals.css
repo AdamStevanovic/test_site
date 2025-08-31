@@ -122,3 +122,48 @@ body {
   font-size: 14px;
   text-align: left;
 }
+/* ===== Recorder (microphone) ===== */
+.rec-wrap {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rec-btn {
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, #1b2536 0%, #121927 100%);
+  color: #e7edf6;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .15s ease, background .15s ease, opacity .15s ease;
+}
+.rec-btn:hover { box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+.rec-btn:active { transform: translateY(1px); }
+
+.rec-btn.recording {
+  background: linear-gradient(180deg, #ff4d4d 0%, #e22f2f 100%);
+  color: #0b1220;
+  box-shadow: 0 10px 26px rgba(255, 76, 76, .35);
+}
+
+.timer {
+  min-width: 74px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  color: #c8d6ee;
+  font-weight: 600;
+}
+
+.rec-clear { margin-left: auto; }
+
