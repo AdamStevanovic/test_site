@@ -185,10 +185,10 @@ export default function Home() {
       <header className="hero">
         <div className="brand">
           <span className="logo">🦜</span>
-          <h1 className="title">Papagaj glas — profesionalni demo</h1>
+          <h1 className="title">Pričaj kao papagaj</h1>
         </div>
         <p className="subtitle">
-          Otpremi ili snimi glas — server poziva tvoj Hugging Face Space i vraća papagaj verziju (WAV).
+          Otpremi ili snimi glas!
         </p>
       </header>
 
