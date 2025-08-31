@@ -1,3 +1,8 @@
+export const runtime = "nodejs";
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
+
 import { client as gradioClient } from "@gradio/client";
 
 export const runtime = "edge"; // ili bez ovoga, ako koristiš node runtimе
