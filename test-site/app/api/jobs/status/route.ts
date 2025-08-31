@@ -1,29 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { client } from "@gradio/client";
 
-const HF_SPACE = process.env.HF_SPACE;
-const HF_TOKEN = process.env.HF_TOKEN; // opcionalno
+const HF_SPACE = process.env.HF_SPACE!;
+const HF_TOKEN = process.env.HF_TOKEN!;
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!HF_SPACE) {
-      return NextResponse.json({ error: "HF_SPACE is missing" }, { status: 500 });
-    }
-
     const { searchParams } = new URL(req.url);
     const jobId = searchParams.get("id");
     if (!jobId) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-    const app = await client(HF_SPACE, HF_TOKEN ? { hf_token: HF_TOKEN } : undefined);
+    const app = await client(HF_SPACE, { hf_token: HF_TOKEN });
+    // @ts-ignore – nova API ima app.job()
+    const job = (app as any).job ? (app as any).job(jobId) : null;
 
-    // @ts-ignore
-    if ((app as any).job) {
-      // @ts-ignore
-      const job = (app as any).job(jobId);
+    if (job && job.status) {
       const s = await job.status();
       if (s.status === "COMPLETED" || s.code === "COMPLETE") {
         const res = await job.result();
@@ -40,7 +34,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ status: "PENDING" });
   } catch (e: any) {
-    console.error("STATUS ROUTE ERROR:", e);
+    console.error(e);
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
   }
 }
