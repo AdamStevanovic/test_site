@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { client } from "@gradio/client";
 
 const HF_SPACE = process.env.HF_SPACE;
-const HF_TOKEN = process.env.HF_TOKEN;
+const HF_TOKEN = process.env.HF_TOKEN; // opcionalno
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,14 +10,15 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!HF_SPACE) return NextResponse.json({ error: "HF_SPACE is missing" }, { status: 500 });
-    if (!HF_TOKEN) return NextResponse.json({ error: "HF_TOKEN is missing" }, { status: 500 });
+    if (!HF_SPACE) {
+      return NextResponse.json({ error: "HF_SPACE is missing" }, { status: 500 });
+    }
 
     const { searchParams } = new URL(req.url);
     const jobId = searchParams.get("id");
     if (!jobId) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-    const app = await client(HF_SPACE, { hf_token: HF_TOKEN });
+    const app = await client(HF_SPACE, HF_TOKEN ? { hf_token: HF_TOKEN } : undefined);
 
     // @ts-ignore
     if ((app as any).job) {
